@@ -1,22 +1,29 @@
 using Microsoft.EntityFrameworkCore;
-using LOGIN.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews();
-builder.Services.AddControllers();
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var serverVersion = new MySqlServerVersion(new Version(8, 4, 8));
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-    ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
+builder.Services.AddDbContext<MydbContext>(options =>
+    options.UseMySql(connectionString, serverVersion));
 
-builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
+builder.Services.AddAuthentication("MyCookieAuth")
+    .AddCookie("MyCookieAuth", options =>
+    {
+        options.Cookie.Name = "UserLoginCookie";
+        options.LoginPath = "/Access/Index";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+    });
+
+builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
@@ -28,15 +35,15 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
 app.UseRouting();
 
 app.UseSession();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Account}/{action=Login}/{id?}");
-
-app.MapControllers();
+    pattern: "{controller=Access}/{action=Index}/{id?}");
 
 app.Run();
