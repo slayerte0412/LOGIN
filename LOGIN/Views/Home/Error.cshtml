@@ -1,0 +1,14 @@
+﻿@model ErrorViewModel
+@{ ViewData["Title"] = "Error"; }
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card card-custom border-danger p-4 bg-white text-center">
+            <i class="bi bi-exclamation-octagon text-danger" style="font-size: 3rem;"></i>
+            <h3 class="text-danger mt-2">Ha ocurrido un error inesperado</h3>
+            @if (Model.ShowRequestId) {
+                <p class="text-muted"><strong>ID de la solicitud:</strong> <code>@Model.RequestId</code></p>
+            }
+            <a asp-controller="Account" asp-action="Login" class="btn btn-danger rounded-pill px-4 mt-3">Volver al Login</a>
+        </div>
+    </div>
+</div>

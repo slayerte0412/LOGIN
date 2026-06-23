@@ -1,0 +1,25 @@
+﻿@model LOGIN.Models.Producto
+@{ ViewData["Title"] = "Detalles"; }
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card card-custom bg-white p-4">
+            <div class="text-center mb-3">
+                <i class="bi bi-info-circle-fill fs-1 text-info"></i>
+                <h3 class="fw-bold mt-2">Ficha del Producto</h3>
+            </div>
+            <div class="bg-light p-3 rounded-3">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">ID:</dt><dd class="col-sm-8 text-muted">#@Model.Id</dd>
+                    <dt class="col-sm-4">Nombre:</dt><dd class="col-sm-8 fw-bold">@Model.Nombre</dd>
+                    <dt class="col-sm-4">Descripción:</dt><dd class="col-sm-8 text-secondary">@Model.Descripcion</dd>
+                    <dt class="col-sm-4">Stock:</dt><dd class="col-sm-8">@Model.Cantidad unidades</dd>
+                    <dt class="col-sm-4">Precio:</dt><dd class="col-sm-8 text-primary fs-4 fw-bold">@Model.Precio.ToString("C")</dd>
+                </dl>
+            </div>
+            <div class="d-flex gap-2 justify-content-center mt-4">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning rounded-pill px-4">Editar</a>
+                <a asp-action="Index" class="btn btn-light rounded-pill px-4">Volver</a>
+            </div>
+        </div>
+    </div>
+</div>

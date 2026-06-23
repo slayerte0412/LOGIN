@@ -1,0 +1,24 @@
+﻿@model LOGIN.Models.Producto
+@{ ViewData["Title"] = "Eliminar Producto"; }
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card card-custom bg-white p-4 text-center">
+            <i class="bi bi-exclamation-triangle-fill fs-1 text-danger"></i>
+            <h2 class="fw-bold mt-2">Confirmar Eliminación</h2>
+            <div class="alert alert-warning mt-3">¿Estás seguro? Esta acción no se puede deshacer.</div>
+            <div class="bg-light p-3 rounded-3 text-start mb-4">
+                <dl class="row mb-0 small">
+                    <dt class="col-sm-4">Nombre:</dt><dd class="col-sm-8 text-secondary">@Model.Nombre</dd>
+                    <dt class="col-sm-4">Precio:</dt><dd class="col-sm-8 text-primary fw-bold">@Model.Precio.ToString("C")</dd>
+                </dl>
+            </div>
+            <form asp-action="Delete">
+                <input type="hidden" asp-for="Id" />
+                <div class="d-flex gap-2 justify-content-center">
+                    <a asp-action="Index" class="btn btn-light rounded-pill px-4">Cancelar</a>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4">Sí, eliminar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
