@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using LOGIN.Data;
+using LOGIN.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
