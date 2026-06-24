@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql;
 using LOGIN.Data;
-using MiContextoAlias = LOGIN.Models.DbcrudusuariosContext;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,9 +8,6 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 var serverVersion = new MySqlServerVersion(new Version(8, 4, 8));
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(connectionString, serverVersion));
-
-builder.Services.AddDbContext<MiContextoAlias>(options =>
     options.UseMySql(connectionString, serverVersion));
 
 builder.Services.AddDistributedMemoryCache();
