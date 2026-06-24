@@ -4,11 +4,14 @@ using LOGIN.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") 
+    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
 var serverVersion = new MySqlServerVersion(new Version(8, 4, 8));
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(connectionString, serverVersion));
+    options.UseMySql(connectionString, serverVersion, mysqlOptions => 
+        mysqlOptions.EnableRetryOnFailure()));
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
