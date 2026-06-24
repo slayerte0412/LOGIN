@@ -4,8 +4,8 @@ using LOGIN.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") 
-    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+// Forzamos directamente la cadena de conexión nativa de Aiven en el código
+var connectionString = "Server=mysql-725ce67-lazaroni-proyecto.l.aivencloud.com;Port=16219;Database=defaultdb;Uid=avnadmin;Pwd=AVNS_mvfq3NkIGAuQeWc7jU5;SslMode=Required;";
 
 var serverVersion = new MySqlServerVersion(new Version(8, 4, 8));
 
