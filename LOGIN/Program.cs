@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql;
 using LOGIN.Data;
+using MiContextoAlias = LOGIN.Models.DbcrudusuariosContext;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +11,7 @@ var serverVersion = new MySqlServerVersion(new Version(8, 4, 8));
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, serverVersion));
 
-builder.Services.AddDbContext<DbContext>(options =>
+builder.Services.AddDbContext<MiContextoAlias>(options =>
     options.UseMySql(connectionString, serverVersion));
 
 builder.Services.AddDistributedMemoryCache();
@@ -25,7 +26,7 @@ builder.Services.AddAuthentication("MyCookieAuth")
     .AddCookie("MyCookieAuth", options =>
     {
         options.Cookie.Name = "UserLoginCookie";
-        options.LoginPath = "/Access/Index";
+        options.LoginPath = "/Account/Login";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
     });
 
@@ -51,7 +52,7 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Access}/{action=Index}/{id?}");
+    pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.MapControllers();
 
