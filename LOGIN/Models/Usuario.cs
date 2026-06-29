@@ -1,36 +1,29 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LOGIN.Models
 {
-    [Table("Usuarios")]
     public class Usuario
     {
-        [Key]
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "El nombre es requerido")]
-        [Display(Name = "Nombre")]
-        public string? Nombre { get; set; }
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        public string Nombre { get; set; }
 
-        [Required(ErrorMessage = "El email es requerido")]
-        [EmailAddress(ErrorMessage = "Email no válido")]
-        [Display(Name = "Email")]
-        public string? Email { get; set; }
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "Formato de email inválido")]
+        public string Email { get; set; }
 
-        [Required(ErrorMessage = "La contraseña es requerida")]
-        [DataType(DataType.Password)]
-        [Display(Name = "Contraseña")]
-        public string? Password { get; set; }
+        [Required(ErrorMessage = "La contraseña es obligatoria")]
+        [RegularExpression(@"^(?=.*[A-Z])(?=.*\d).+$", ErrorMessage = "La contraseña debe contener al menos una mayúscula y un número")]
+        public string Password { get; set; }
 
-        [Required(ErrorMessage = "La edad es requerida")]
-        [Range(1, 120)]
-        [Display(Name = "Edad")]
+        [Required(ErrorMessage = "La edad es obligatoria")]
         public int Edad { get; set; }
 
-        [Required(ErrorMessage = "La ciudad es requerida")]
-        [Display(Name = "Ciudad")]
-        public string? Ciudad { get; set; }
+        [Required(ErrorMessage = "La ciudad es obligatoria")]
+        public string Ciudad { get; set; }
+
+        public string Rol { get; set; } = "Cliente";
 
         public DateTime FechaRegistro { get; set; } = DateTime.Now;
     }

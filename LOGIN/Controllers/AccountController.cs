@@ -37,6 +37,7 @@ namespace LOGIN.Controllers
                     HttpContext.Session.SetString("UsuarioId", usuario.Id.ToString());
                     HttpContext.Session.SetString("UsuarioNombre", usuario.Nombre ?? "");
                     HttpContext.Session.SetString("UsuarioEmail", usuario.Email ?? "");
+                    HttpContext.Session.SetString("UsuarioRol", usuario.Rol ?? "Cliente");
                     return RedirectToAction("Index", "Home");
                 }
                 else
@@ -63,6 +64,15 @@ namespace LOGIN.Controllers
                 {
                     ModelState.AddModelError("Email", "Este email ya está registrado");
                     return View(usuario);
+                }
+
+                if (usuario.Email.EndsWith("@lazaroni.com", StringComparison.OrdinalIgnoreCase))
+                {
+                    usuario.Rol = "Admin";
+                }
+                else
+                {
+                    usuario.Rol = "Cliente";
                 }
 
                 usuario.FechaRegistro = DateTime.Now;

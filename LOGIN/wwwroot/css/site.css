@@ -1,31 +1,61 @@
-html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
 body {
-  margin-bottom: 60px;
+    background-color: #f8f9fa;
+    color: #333;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+.navbar-lazaroni {
+    background-color: #1a1a1a !important;
+    border-bottom: 4px solid #F39C12;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+.btn-lazaroni {
+    background: linear-gradient(135deg, #FFD700 0%, #F39C12 100%);
+    color: #1a1a1a !important;
+    font-weight: 600;
+    border: none;
+    border-radius: 2rem;
+    padding: 0.5rem 1.5rem;
+    transition: all 0.3s;
+}
+
+    .btn-lazaroni:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
+        background: linear-gradient(135deg, #F39C12 0%, #E67E22 100%);
+        color: white !important;
+    }
+
+.btn-dark-lazaroni {
+    background-color: #1a1a1a;
+    color: #FFD700;
+    border: 1px solid #FFD700;
+    border-radius: 2rem;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+    .btn-dark-lazaroni:hover {
+        background-color: #FFD700;
+        color: #1a1a1a;
+    }
+
+.card-lazaroni {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+    .card-lazaroni:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(243, 156, 18, 0.2);
+        border: 1px solid rgba(243, 156, 18, 0.5);
+    }
+
+.badge-lazaroni {
+    background-color: #1a1a1a;
+    color: #FFD700;
+    padding: 0.5em 1em;
+    border-radius: 20px;
 }

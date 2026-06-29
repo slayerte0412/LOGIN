@@ -1,28 +1,29 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LOGIN.Models
 {
-    [Table("Productos")]
     public class Producto
     {
-        [Key]
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "El nombre es requerido")]
-        [StringLength(200)]
-        public string Nombre { get; set; } = string.Empty;
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        public string Nombre { get; set; }
 
-        public string? Descripcion { get; set; }
+        public string Descripcion { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "La cantidad es obligatoria")]
         [Range(0, int.MaxValue, ErrorMessage = "La cantidad no puede ser negativa")]
         public int Cantidad { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "El precio es obligatorio")]
         [Range(0.01, double.MaxValue, ErrorMessage = "El precio debe ser mayor a 0")]
-        [DataType(DataType.Currency)]
         public decimal Precio { get; set; }
+
+        public string? ImagenLocal { get; set; }
+
+        public string? ImagenBase64 { get; set; }
+
+        public bool Activo { get; set; } = true;
 
         public DateTime FechaRegistro { get; set; } = DateTime.Now;
     }
