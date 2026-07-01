@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LOGIN.Data;
 using LOGIN.Models;
@@ -26,12 +26,15 @@ namespace LOGIN.Controllers
 
         public async Task<IActionResult> Index()
         {
-            if (!UsuarioLogueado()) return RedirectToAction("Login", "Account");
-
-            var productos = await _context.Productos.ToListAsync();
-            var carritoCount = await _context.CarritoItems
-                .Where(c => c.UsuarioId == GetUsuarioId())
-                .SumAsync(c => c.Cantidad);
+            var productos = await _context.Productos.Where(p => p.Activo).ToListAsync();
+            
+            int carritoCount = 0;
+            if (UsuarioLogueado())
+            {
+                carritoCount = await _context.CarritoItems
+                    .Where(c => c.UsuarioId == GetUsuarioId())
+                    .SumAsync(c => c.Cantidad);
+            }
 
             ViewBag.CarritoCount = carritoCount;
             return View(productos);
@@ -45,7 +48,7 @@ namespace LOGIN.Controllers
             var usuarioId = GetUsuarioId();
             var producto = await _context.Productos.FindAsync(productoId);
 
-            if (producto == null) return Json(new { success = false, message = "Producto no encontrado" });
+            if (producto == null || !producto.Activo) return Json(new { success = false, message = "Producto no encontrado o no disponible" });
             if (producto.Cantidad < cantidad) return Json(new { success = false, message = "Stock insuficiente" });
 
             var itemExistente = await _context.CarritoItems
@@ -174,8 +177,9 @@ namespace LOGIN.Controllers
                 DireccionEnvio = direccion,
                 MetodoPago = metodoPago,
                 NumeroReferencia = "REF-" + DateTime.Now.Ticks.ToString().Substring(0, 8),
-                Estado = EstadoPedido.Confirmado
+                Estado = 1 
             };
+            
             _context.Pedidos.Add(pedido);
             await _context.SaveChangesAsync();
 
@@ -205,7 +209,7 @@ namespace LOGIN.Controllers
             if (!UsuarioLogueado()) return RedirectToAction("Login", "Account");
 
             var pedidos = await _context.Pedidos
-                .Include(p => p.Detalles!)
+                .Include(p => p.PedidoDetalles)
                 .ThenInclude(d => d.Producto)
                 .Where(p => p.UsuarioId == GetUsuarioId())
                 .OrderByDescending(p => p.FechaPedido)
