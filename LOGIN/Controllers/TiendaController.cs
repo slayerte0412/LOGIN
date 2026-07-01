@@ -170,6 +170,8 @@ namespace LOGIN.Controllers
             }
 
             var total = carritoItems.Sum(c => c.Cantidad * c.Producto!.Precio);
+            
+            // CORRECCIÓN: Volvemos a usar EstadoPedido.Confirmado como estaba originalmente
             var pedido = new Pedido
             {
                 UsuarioId = usuarioId,
@@ -177,7 +179,7 @@ namespace LOGIN.Controllers
                 DireccionEnvio = direccion,
                 MetodoPago = metodoPago,
                 NumeroReferencia = "REF-" + DateTime.Now.Ticks.ToString().Substring(0, 8),
-                Estado = 1 
+                Estado = EstadoPedido.Confirmado 
             };
             
             _context.Pedidos.Add(pedido);
@@ -208,8 +210,9 @@ namespace LOGIN.Controllers
         {
             if (!UsuarioLogueado()) return RedirectToAction("Login", "Account");
 
+            // CORRECCIÓN: Volvemos a usar p.Detalles! como está en tu modelo Pedido.cs
             var pedidos = await _context.Pedidos
-                .Include(p => p.PedidoDetalles)
+                .Include(p => p.Detalles!)
                 .ThenInclude(d => d.Producto)
                 .Where(p => p.UsuarioId == GetUsuarioId())
                 .OrderByDescending(p => p.FechaPedido)
