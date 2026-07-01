@@ -11,28 +11,12 @@ body {
 .card-lazaroni {
     background-color: #1a1a1a !important;
     border: 1px solid #333 !important;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-
-    .card-lazaroni:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 6px 12px rgba(255, 193, 7, 0.2);
-    }
-
-    .card-lazaroni .text-dark {
-        color: #ffc107 !important;
-    }
-
-    .card-lazaroni .text-muted {
-        color: #b0b0b0 !important;
-    }
 
 .btn-lazaroni {
     background-color: #ffc107;
     color: #000;
     font-weight: bold;
-    border: none;
 }
 
     .btn-lazaroni:hover {
@@ -46,24 +30,14 @@ body {
     border: 1px solid #ffc107;
 }
 
-    .btn-dark-lazaroni:hover {
-        background-color: #ffc107;
-        color: #333;
-    }
-
 .badge-lazaroni {
     background-color: #333;
     color: #fff;
     border: 1px solid #555;
-    padding: 0.5em 0.8em;
 }
 
-.input-group-text.bg-white, .form-control {
+.input-group-text, .form-control {
     background-color: #2a2a2a !important;
     border-color: #444 !important;
     color: #fff !important;
 }
-
-    .form-control::placeholder {
-        color: #888 !important;
-    }
