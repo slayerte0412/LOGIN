@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LOGIN.Data;
 using LOGIN.Models;
+using System.Text.Json;
 
 namespace LOGIN.Controllers
 {
@@ -14,211 +15,159 @@ namespace LOGIN.Controllers
             _context = context;
         }
 
-        private bool UsuarioLogueado()
+        // Clase auxiliar para el carrito anónimo en sesión
+        public class CarritoAnonimoItem
         {
-            return !string.IsNullOrEmpty(HttpContext.Session.GetString("UsuarioId"));
-        }
-
-        private int GetUsuarioId()
-        {
-            return int.Parse(HttpContext.Session.GetString("UsuarioId") ?? "0");
+            public int ProductoId { get; set; }
+            public int Cantidad { get; set; }
         }
 
         public async Task<IActionResult> Index()
         {
             var productos = await _context.Productos.Where(p => p.Activo).ToListAsync();
-            
-            int carritoCount = 0;
-            if (UsuarioLogueado())
-            {
-                carritoCount = await _context.CarritoItems
-                    .Where(c => c.UsuarioId == GetUsuarioId())
-                    .SumAsync(c => c.Cantidad);
-            }
-
-            ViewBag.CarritoCount = carritoCount;
+            ViewBag.CarritoCount = ObtenerCantidadCarrito();
             return View(productos);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AgregarAlCarrito(int productoId, int cantidad = 1)
+        public async Task<IActionResult> AgregarAlCarrito(int productoId, int cantidad)
         {
-            if (!UsuarioLogueado()) return Json(new { success = false, message = "Debes iniciar sesión" });
-
-            var usuarioId = GetUsuarioId();
             var producto = await _context.Productos.FindAsync(productoId);
-
-            if (producto == null || !producto.Activo) return Json(new { success = false, message = "Producto no encontrado o no disponible" });
-            if (producto.Cantidad < cantidad) return Json(new { success = false, message = "Stock insuficiente" });
-
-            var itemExistente = await _context.CarritoItems
-                .FirstOrDefaultAsync(c => c.UsuarioId == usuarioId && c.ProductoId == productoId);
-
-            if (itemExistente != null)
+            if (producto == null || producto.Cantidad < cantidad)
             {
-                itemExistente.Cantidad += cantidad;
+                return Json(new { success = false, message = "Producto no disponible o stock insuficiente." });
             }
-            else
+
+            var userIdString = HttpContext.Session.GetString("UsuarioId");
+
+            if (string.IsNullOrEmpty(userIdString))
             {
-                var carritoItem = new CarritoItem
+                // Usuario NO logueado: Guardar en Sesión (JSON)
+                var carritoJson = HttpContext.Session.GetString("CarritoAnonimo");
+                var carrito = string.IsNullOrEmpty(carritoJson) ? new List<CarritoAnonimoItem>()
+                    : JsonSerializer.Deserialize<List<CarritoAnonimoItem>>(carritoJson);
+
+                var itemExistente = carrito.FirstOrDefault(c => c.ProductoId == productoId);
+                if (itemExistente != null)
                 {
-                    UsuarioId = usuarioId,
-                    ProductoId = productoId,
-                    Cantidad = cantidad
-                };
-                _context.CarritoItems.Add(carritoItem);
-            }
-            await _context.SaveChangesAsync();
+                    itemExistente.Cantidad += cantidad;
+                }
+                else
+                {
+                    carrito.Add(new CarritoAnonimoItem { ProductoId = productoId, Cantidad = cantidad });
+                }
 
-            var totalItems = await _context.CarritoItems
-                .Where(c => c.UsuarioId == usuarioId)
-                .SumAsync(c => c.Cantidad);
-
-            return Json(new { success = true, message = "Producto agregado", count = totalItems });
-        }
-
-        public async Task<IActionResult> Carrito()
-        {
-            if (!UsuarioLogueado()) return RedirectToAction("Login", "Account");
-
-            var carritoItems = await _context.CarritoItems
-                .Include(c => c.Producto)
-                .Where(c => c.UsuarioId == GetUsuarioId())
-                .ToListAsync();
-
-            ViewBag.Total = carritoItems.Sum(c => c.Cantidad * c.Producto!.Precio);
-            return View(carritoItems);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> ActualizarCantidad(int itemId, int cantidad)
-        {
-            if (!UsuarioLogueado()) return Json(new { success = false });
-
-            var item = await _context.CarritoItems
-                .Include(c => c.Producto)
-                .FirstOrDefaultAsync(c => c.Id == itemId && c.UsuarioId == GetUsuarioId());
-
-            if (item == null) return Json(new { success = false });
-
-            if (cantidad <= 0)
-            {
-                _context.CarritoItems.Remove(item);
+                HttpContext.Session.SetString("CarritoAnonimo", JsonSerializer.Serialize(carrito));
             }
             else
             {
-                if (item.Producto != null && item.Producto.Cantidad < cantidad)
-                    return Json(new { success = false, message = "Stock insuficiente" });
+                // Usuario Logueado: Guardar en Base de Datos
+                int usuarioId = int.Parse(userIdString);
+                var carritoItem = await _context.CarritoItems
+                    .FirstOrDefaultAsync(c => c.UsuarioId == usuarioId && c.ProductoId == productoId);
 
-                item.Cantidad = cantidad;
+                if (carritoItem != null)
+                {
+                    carritoItem.Cantidad += cantidad;
+                }
+                else
+                {
+                    _context.CarritoItems.Add(new CarritoItem
+                    {
+                        UsuarioId = usuarioId,
+                        ProductoId = productoId,
+                        Cantidad = cantidad
+                    });
+                }
+                await _context.SaveChangesAsync();
             }
-            await _context.SaveChangesAsync();
 
-            var carritoItems = await _context.CarritoItems
-                .Include(c => c.Producto)
-                .Where(c => c.UsuarioId == GetUsuarioId())
-                .ToListAsync();
+            return Json(new { success = true, message = "Producto agregado al carrito." });
+        }
 
-            var total = carritoItems.Sum(c => c.Cantidad * c.Producto!.Precio);
-            var totalItems = carritoItems.Sum(c => c.Cantidad);
+        // NUEVO: Método Asíncrono para sumar/restar sin recargar la página
+        [HttpPost]
+        public async Task<IActionResult> ActualizarCantidadCarrito(int productoId, string operacion)
+        {
+            var userIdString = HttpContext.Session.GetString("UsuarioId");
+            int nuevaCantidad = 0;
+            decimal precioUnitario = 0;
 
+            var producto = await _context.Productos.FindAsync(productoId);
+            if (producto == null) return Json(new { success = false });
+            precioUnitario = producto.Precio;
+
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                // Lógica para usuario anónimo
+                var carritoJson = HttpContext.Session.GetString("CarritoAnonimo");
+                if (string.IsNullOrEmpty(carritoJson)) return Json(new { success = false });
+
+                var carrito = JsonSerializer.Deserialize<List<CarritoAnonimoItem>>(carritoJson);
+                var item = carrito.FirstOrDefault(c => c.ProductoId == productoId);
+                if (item == null) return Json(new { success = false });
+
+                if (operacion == "sumar" && item.Cantidad < producto.Cantidad) item.Cantidad++;
+                else if (operacion == "restar" && item.Cantidad > 1) item.Cantidad--;
+
+                nuevaCantidad = item.Cantidad;
+                HttpContext.Session.SetString("CarritoAnonimo", JsonSerializer.Serialize(carrito));
+            }
+            else
+            {
+                // Lógica para usuario logueado
+                int usuarioId = int.Parse(userIdString);
+                var item = await _context.CarritoItems.FirstOrDefaultAsync(c => c.UsuarioId == usuarioId && c.ProductoId == productoId);
+                if (item == null) return Json(new { success = false });
+
+                if (operacion == "sumar" && item.Cantidad < producto.Cantidad) item.Cantidad++;
+                else if (operacion == "restar" && item.Cantidad > 1) item.Cantidad--;
+
+                nuevaCantidad = item.Cantidad;
+                await _context.SaveChangesAsync();
+            }
+
+            decimal nuevoSubtotal = nuevaCantidad * precioUnitario;
+
+            // Retornamos los datos formateados para que JavaScript los actualice visualmente
             return Json(new
             {
                 success = true,
-                subtotal = item.Cantidad * (item.Producto?.Precio ?? 0),
-                total = total,
-                count = totalItems,
-                itemRemoved = cantidad <= 0
+                cantidad = nuevaCantidad,
+                subtotalFormateado = "Bs. " + nuevoSubtotal.ToString("0.00")
             });
         }
 
-        public async Task<IActionResult> Checkout()
+        // Este es el paso clave: Redirigir al login solo cuando hacen clic en "Pagar"
+        [HttpGet]
+        public IActionResult Checkout()
         {
-            if (!UsuarioLogueado()) return RedirectToAction("Login", "Account");
+            var userIdString = HttpContext.Session.GetString("UsuarioId");
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                // Mandamos al login, pero le decimos que regrese a /Tienda/Checkout al terminar
+                return RedirectToAction("Login", "Account", new { returnUrl = "/Tienda/Checkout" });
+            }
 
-            var carritoItems = await _context.CarritoItems
-                .Include(c => c.Producto)
-                .Where(c => c.UsuarioId == GetUsuarioId())
-                .ToListAsync();
-
-            if (!carritoItems.Any()) return RedirectToAction("Carrito");
-
-            ViewBag.Total = carritoItems.Sum(c => c.Cantidad * c.Producto!.Precio);
+            // (Aquí irá la lógica para migrar el carrito anónimo a la DB y mostrar la vista de pago)
             return View();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> ConfirmarPedido(string direccion, string metodoPago)
+        private int ObtenerCantidadCarrito()
         {
-            if (!UsuarioLogueado()) return RedirectToAction("Login", "Account");
-
-            var usuarioId = GetUsuarioId();
-            var carritoItems = await _context.CarritoItems
-                .Include(c => c.Producto)
-                .Where(c => c.UsuarioId == usuarioId)
-                .ToListAsync();
-
-            if (!carritoItems.Any()) return RedirectToAction("Carrito");
-
-            foreach (var item in carritoItems)
+            var userIdString = HttpContext.Session.GetString("UsuarioId");
+            if (string.IsNullOrEmpty(userIdString))
             {
-                if (item.Producto!.Cantidad < item.Cantidad)
-                {
-                    TempData["Error"] = $"Stock insuficiente para {item.Producto.Nombre}";
-                    return RedirectToAction("Carrito");
-                }
+                var carritoJson = HttpContext.Session.GetString("CarritoAnonimo");
+                if (string.IsNullOrEmpty(carritoJson)) return 0;
+                var carrito = JsonSerializer.Deserialize<List<CarritoAnonimoItem>>(carritoJson);
+                return carrito.Sum(c => c.Cantidad);
             }
-
-            var total = carritoItems.Sum(c => c.Cantidad * c.Producto!.Precio);
-            
-            // CORRECCIÓN: Volvemos a usar EstadoPedido.Confirmado como estaba originalmente
-            var pedido = new Pedido
+            else
             {
-                UsuarioId = usuarioId,
-                Total = total,
-                DireccionEnvio = direccion,
-                MetodoPago = metodoPago,
-                NumeroReferencia = "REF-" + DateTime.Now.Ticks.ToString().Substring(0, 8),
-                Estado = EstadoPedido.Confirmado 
-            };
-            
-            _context.Pedidos.Add(pedido);
-            await _context.SaveChangesAsync();
-
-            foreach (var item in carritoItems)
-            {
-                var detalle = new PedidoDetalle
-                {
-                    PedidoId = pedido.Id,
-                    ProductoId = item.ProductoId,
-                    Cantidad = item.Cantidad,
-                    PrecioUnitario = item.Producto!.Precio
-                };
-                _context.PedidoDetalles.Add(detalle);
-                item.Producto.Cantidad -= item.Cantidad;
-                _context.Entry(item.Producto).State = EntityState.Modified;
+                int usuarioId = int.Parse(userIdString);
+                return _context.CarritoItems.Where(c => c.UsuarioId == usuarioId).Sum(c => c.Cantidad);
             }
-
-            _context.CarritoItems.RemoveRange(carritoItems);
-            await _context.SaveChangesAsync();
-
-            TempData["Mensaje"] = "¡Pedido realizado con éxito!";
-            return RedirectToAction("MisCompras");
-        }
-
-        public async Task<IActionResult> MisCompras()
-        {
-            if (!UsuarioLogueado()) return RedirectToAction("Login", "Account");
-
-            // CORRECCIÓN: Volvemos a usar p.Detalles! como está en tu modelo Pedido.cs
-            var pedidos = await _context.Pedidos
-                .Include(p => p.Detalles!)
-                .ThenInclude(d => d.Producto)
-                .Where(p => p.UsuarioId == GetUsuarioId())
-                .OrderByDescending(p => p.FechaPedido)
-                .ToListAsync();
-
-            return View(pedidos);
         }
     }
 }

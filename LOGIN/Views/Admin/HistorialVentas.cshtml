@@ -1,0 +1,116 @@
+﻿@model IEnumerable<LOGIN.Models.Pedido>
+@{ ViewData["Title"] = "Historial de Ventas"; }
+
+<div class="container mt-4 text-light">
+    <h2 class="mb-4 text-warning"><i class="bi bi-graph-up-arrow"></i> Panel Administrativo: Historial de Ventas</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card card-lazaroni text-center p-3">
+                <h5 class="text-muted">Total Acumulado</h5>
+                <h3 class="text-success fw-bold">Bs. @ViewBag.TotalVentas.ToString("0.00")</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-lazaroni text-center p-3">
+                <h5 class="text-muted">Pedidos Procesados</h5>
+                <h3 class="text-warning fw-bold">@Model.Count()</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <form method="get" asp-action="HistorialVentas" class="card card-lazaroni p-3">
+                <label class="form-label text-warning">Filtrar por Mes:</label>
+                <div class="input-group">
+                    <select name="mes" class="form-select bg-dark text-light border-secondary">
+                        <option value="">Todos los meses</option>
+                        <option value="1">Enero</option>
+                        <option value="2">Febrero</option>
+                        <option value="3">Marzo</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Mayo</option>
+                        <option value="6">Junio</option>
+                        <option value="7">Julio</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Septiembre</option>
+                        <option value="10">Octubre</option>
+                        <option value="11">Noviembre</option>
+                        <option value="12">Diciembre</option>
+                    </select>
+                    <button type="submit" class="btn btn-lazaroni">Filtrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card card-lazaroni p-3 mb-4">
+                <h4 class="text-warning mb-3">Últimas Transacciones</h4>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle">
+                        <thead>
+                            <tr class="text-warning">
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Fecha</th>
+                                <th>Método Pago</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var pedido in Model)
+                            {
+                                <tr>
+                                    <td>#@pedido.Id</td>
+                                    <td>@pedido.Usuario?.Nombre</td>
+                                    <td>@pedido.FechaPedido.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@(pedido.MetodoPago ?? "N/A")</td>
+                                    <td class="text-success fw-bold">Bs. @pedido.Total.ToString("0.00")</td>
+                                    <td>
+                                        @if(pedido.Estado == 0) { <span class="badge bg-warning text-dark">Pendiente</span> }
+                                        else if(pedido.Estado == 1) { <span class="badge bg-success">Completado</span> }
+                                        else { <span class="badge bg-danger">Cancelado</span> }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-lazaroni p-3">
+                <h4 class="text-warning mb-3 text-center">Estado de Pedidos</h4>
+                <canvas id="estadosChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('estadosChart').getContext('2d');
+        const data = @Html.Raw(ViewBag.EstadosChartData);
+        
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Pendientes', 'Completados', 'Cancelados'],
+                datasets: [{
+                    data: data,
+                    backgroundColor: ['#ffc107', '#198754', '#dc3545'],
+                    borderWidth: 1,
+                    borderColor: '#1a1a1a'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#e0e0e0' } }
+                }
+            }
+        });
+    </script>
+}

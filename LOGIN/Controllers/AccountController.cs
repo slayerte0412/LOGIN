@@ -15,17 +15,20 @@ namespace LOGIN.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl = null)
         {
             if (!string.IsNullOrEmpty(HttpContext.Session.GetString("UsuarioId")))
             {
                 return RedirectToAction("Index", "Home");
             }
+
+            // Guardamos la URL a la que el usuario intentaba ir (ej: /Tienda/Checkout)
+            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
             if (ModelState.IsValid)
             {
@@ -34,10 +37,18 @@ namespace LOGIN.Controllers
 
                 if (usuario != null)
                 {
+                    // Guardamos los datos de sesión, incluyendo el Rol
                     HttpContext.Session.SetString("UsuarioId", usuario.Id.ToString());
                     HttpContext.Session.SetString("UsuarioNombre", usuario.Nombre ?? "");
                     HttpContext.Session.SetString("UsuarioEmail", usuario.Email ?? "");
                     HttpContext.Session.SetString("UsuarioRol", usuario.Rol ?? "Cliente");
+
+                    // Si venía de intentar pagar en el carrito, lo devolvemos ahí
+                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    {
+                        return Redirect(returnUrl);
+                    }
+
                     return RedirectToAction("Index", "Home");
                 }
                 else
@@ -45,6 +56,8 @@ namespace LOGIN.Controllers
                     ModelState.AddModelError("", "Email o contraseña incorrectos");
                 }
             }
+
+            ViewData["ReturnUrl"] = returnUrl;
             return View(model);
         }
 
@@ -66,16 +79,10 @@ namespace LOGIN.Controllers
                     return View(usuario);
                 }
 
-                if (usuario.Email.EndsWith("@lazaroni.com", StringComparison.OrdinalIgnoreCase))
-                {
-                    usuario.Rol = "Admin";
-                }
-                else
-                {
-                    usuario.Rol = "Cliente";
-                }
-
+                // Aseguramos que los nuevos registros sean Clientes por defecto
+                usuario.Rol = "Cliente";
                 usuario.FechaRegistro = DateTime.Now;
+
                 _context.Usuarios.Add(usuario);
                 await _context.SaveChangesAsync();
 
@@ -88,7 +95,7 @@ namespace LOGIN.Controllers
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
-            return RedirectToAction("Login");
+            return RedirectToAction("Index", "Tienda");
         }
     }
 }

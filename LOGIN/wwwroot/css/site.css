@@ -1,61 +1,69 @@
 body {
-    background-color: #f8f9fa;
-    color: #333;
+    background-color: #121212 !important;
+    color: #e0e0e0;
 }
 
-.navbar-lazaroni {
-    background-color: #1a1a1a !important;
-    border-bottom: 4px solid #F39C12;
+.bg-white {
+    background-color: #1e1e1e !important;
+    color: #ffffff;
 }
-
-.btn-lazaroni {
-    background: linear-gradient(135deg, #FFD700 0%, #F39C12 100%);
-    color: #1a1a1a !important;
-    font-weight: 600;
-    border: none;
-    border-radius: 2rem;
-    padding: 0.5rem 1.5rem;
-    transition: all 0.3s;
-}
-
-    .btn-lazaroni:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
-        background: linear-gradient(135deg, #F39C12 0%, #E67E22 100%);
-        color: white !important;
-    }
-
-.btn-dark-lazaroni {
-    background-color: #1a1a1a;
-    color: #FFD700;
-    border: 1px solid #FFD700;
-    border-radius: 2rem;
-    font-weight: 500;
-    transition: all 0.3s;
-}
-
-    .btn-dark-lazaroni:hover {
-        background-color: #FFD700;
-        color: #1a1a1a;
-    }
 
 .card-lazaroni {
-    border: none;
-    border-radius: 1rem;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
-    overflow: hidden;
+    background-color: #1a1a1a !important;
+    border: 1px solid #333 !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
     .card-lazaroni:hover {
         transform: translateY(-5px);
-        box-shadow: 0 12px 25px rgba(243, 156, 18, 0.2);
-        border: 1px solid rgba(243, 156, 18, 0.5);
+        box-shadow: 0 6px 12px rgba(255, 193, 7, 0.2);
+    }
+
+    .card-lazaroni .text-dark {
+        color: #ffc107 !important;
+    }
+
+    .card-lazaroni .text-muted {
+        color: #b0b0b0 !important;
+    }
+
+.btn-lazaroni {
+    background-color: #ffc107;
+    color: #000;
+    font-weight: bold;
+    border: none;
+}
+
+    .btn-lazaroni:hover {
+        background-color: #e0a800;
+        color: #000;
+    }
+
+.btn-dark-lazaroni {
+    background-color: #333;
+    color: #ffc107;
+    border: 1px solid #ffc107;
+}
+
+    .btn-dark-lazaroni:hover {
+        background-color: #ffc107;
+        color: #333;
     }
 
 .badge-lazaroni {
-    background-color: #1a1a1a;
-    color: #FFD700;
-    padding: 0.5em 1em;
-    border-radius: 20px;
+    background-color: #333;
+    color: #fff;
+    border: 1px solid #555;
+    padding: 0.5em 0.8em;
 }
+
+.input-group-text.bg-white, .form-control {
+    background-color: #2a2a2a !important;
+    border-color: #444 !important;
+    color: #fff !important;
+}
+
+    .form-control::placeholder {
+        color: #888 !important;
+    }
