@@ -1,61 +1,84 @@
 body {
-    background-color: #f8f9fa;
-    color: #333;
+    background-color: #121212 !important;
+    color: #e0e0e0;
 }
 
-.navbar-lazaroni {
+/* Modificar los contenedores blancos a oscuros */
+.bg-white, .container.bg-white {
     background-color: #1a1a1a !important;
-    border-bottom: 4px solid #F39C12;
+}
+
+/* Tarjetas de productos */
+.card-lazaroni {
+    background-color: #1e1e1e;
+    border: 1px solid #333 !important;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-lazaroni:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(255, 193, 7, 0.15) !important; /* Brillo amarillo sutil */
+}
+
+/* Ajuste de textos en modo oscuro */
+.text-dark { color: #ffffff !important; }
+.text-muted { color: #a0a0a0 !important; }
+
+/* Botones y Badges Lazaroni */
+.btn-dark-lazaroni {
+    background-color: #212529;
+    color: #ffc107;
+    border: 1px solid #ffc107;
+    transition: all 0.3s;
+}
+
+.btn-dark-lazaroni:hover {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.badge-lazaroni {
+    background-color: #ffc107;
+    color: #000;
+    font-weight: bold;
 }
 
 .btn-lazaroni {
-    background: linear-gradient(135deg, #FFD700 0%, #F39C12 100%);
-    color: #1a1a1a !important;
-    font-weight: 600;
-    border: none;
-    border-radius: 2rem;
-    padding: 0.5rem 1.5rem;
-    transition: all 0.3s;
+    background-color: #ffc107;
+    color: #000;
+    font-weight: bold;
 }
 
-    .btn-lazaroni:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
-        background: linear-gradient(135deg, #F39C12 0%, #E67E22 100%);
-        color: white !important;
-    }
-
-.btn-dark-lazaroni {
-    background-color: #1a1a1a;
-    color: #FFD700;
-    border: 1px solid #FFD700;
-    border-radius: 2rem;
-    font-weight: 500;
-    transition: all 0.3s;
+.btn-lazaroni:hover {
+    background-color: #e0a800;
+    color: #000;
 }
 
-    .btn-dark-lazaroni:hover {
-        background-color: #FFD700;
-        color: #1a1a1a;
-    }
-
-.card-lazaroni {
-    border: none;
-    border-radius: 1rem;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
-    overflow: hidden;
+/* Modal de Vista Previa Oscuro */
+.modal-content.bg-dark-lazaroni {
+    background-color: #1e1e1e;
+    color: #fff;
+    border: 1px solid #333;
+    border-radius: 15px;
+}
+.modal-content.bg-dark-lazaroni .modal-header {
+    border-bottom: 1px solid #333;
+}
+.modal-content.bg-dark-lazaroni .modal-footer {
+    border-top: 1px solid #333;
+}
+.modal-content.bg-dark-lazaroni .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
 }
 
-    .card-lazaroni:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 25px rgba(243, 156, 18, 0.2);
-        border: 1px solid rgba(243, 156, 18, 0.5);
-    }
-
-.badge-lazaroni {
-    background-color: #1a1a1a;
-    color: #FFD700;
-    padding: 0.5em 1em;
-    border-radius: 20px;
+/* Buscador oscuro */
+#buscadorProductos, .input-group-text {
+    background-color: #242424 !important;
+    color: #fff !important;
+    border-color: #333 !important;
+}
+#buscadorProductos::placeholder {
+    color: #888 !important;
 }
