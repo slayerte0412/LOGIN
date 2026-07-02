@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LOGIN.Data;
 using LOGIN.Models;
@@ -12,6 +12,11 @@ namespace LOGIN.Controllers
         public ProductosViewController(ApplicationDbContext context)
         {
             _context = context;
+        }
+
+        private DateTime ObtenerHoraBolivia()
+        {
+            return DateTime.UtcNow.AddHours(-4);
         }
 
         public async Task<IActionResult> Index()
@@ -49,15 +54,26 @@ namespace LOGIN.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Producto producto)
+        public async Task<IActionResult> Create(Producto producto, IFormFile? imagenUpload)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("UsuarioId")))
             {
                 return RedirectToAction("Login", "Account");
             }
+
             if (ModelState.IsValid)
             {
-                producto.FechaRegistro = DateTime.Now;
+                if (imagenUpload != null && imagenUpload.Length > 0)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        await imagenUpload.CopyToAsync(ms);
+                        var fileBytes = ms.ToArray();
+                        producto.ImagenBase64 = $"data:{imagenUpload.ContentType};base64,{Convert.ToBase64String(fileBytes)}";
+                    }
+                }
+
+                producto.FechaRegistro = ObtenerHoraBolivia();
                 _context.Add(producto);
                 await _context.SaveChangesAsync();
                 TempData["Mensaje"] = "Producto creado exitosamente";
@@ -82,12 +98,85 @@ namespace LOGIN.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Producto producto)
+        public async Task<IActionResult> Edit(int id, Producto producto, IFormFile? imagenUpload)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("UsuarioId")))
             {
                 return RedirectToAction("Login", "Account");
             }
+            if (id != producto.Id) return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var existente = await _context.Productos.FindAsync(id);
+                    if (existente == null) return NotFound();
+
+                    existente.Nombre = producto.Nombre;
+                    existente.Descripcion = producto.Descripcion;
+                    existente.Cantidad = producto.Cantidad;
+                    existente.Precio = producto.Precio;
+                    existente.Activo = producto.Activo;
+
+                    if (imagenUpload != null && imagenUpload.Length > 0)
+                    {
+                        using (var ms = new MemoryStream())
+                        {
+                            await imagenUpload.CopyToAsync(ms);
+                            var fileBytes = ms.ToArray();
+                            existente.ImagenBase64 = $"data:{imagenUpload.ContentType};base64,{Convert.ToBase64String(fileBytes)}";
+                        }
+                    }
+
+                    _context.Update(existente);
+                    await _context.SaveChangesAsync();
+                    TempData["Mensaje"] = "Producto actualizado exitosamente";
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!ProductoExists(producto.Id)) return NotFound();
+                    throw;
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(producto);
+        }
+
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("UsuarioId")))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (id == null) return NotFound();
+
+            var producto = await _context.Productos.FirstOrDefaultAsync(m => m.Id == id);
+            if (producto == null) return NotFound();
+
+            return View(producto);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var producto = await _context.Productos.FindAsync(id);
+            if (producto != null)
+            {
+                _context.Productos.Remove(producto);
+                await _context.SaveChangesAsync();
+                TempData["Mensaje"] = "Producto eliminado exitosamente";
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool ProductoExists(int id)
+        {
+            return _context.Productos.Any(e => e.Id == id);
+        }
+    }
+}
             if (id != producto.Id) return NotFound();
 
             if (ModelState.IsValid)
