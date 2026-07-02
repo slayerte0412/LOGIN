@@ -14,10 +14,7 @@
         <div class="col-md-4 mb-3 mb-md-0">
             <div class="input-group shadow-sm">
                 <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" id="buscadorProductos" class="form-control border-start-0 border-end-0" placeholder="Ej: Fideo Corbata, Espagueti...">
-                <button class="btn btn-outline-warning" type="button" id="btnVoiceSearch" title="Búsqueda por voz">
-                    <i class="bi bi-mic-fill" id="micIcon" style="color: #333;"></i>
-                </button>
+                <input type="text" id="buscadorProductos" class="form-control border-start-0" placeholder="Ej: Fideo Corbata, Espagueti...">
             </div>
         </div>
         <div class="col-md-3 text-md-end">
@@ -105,7 +102,6 @@
             });
         });
 
-        // Tu código original de búsqueda
         document.getElementById('buscadorProductos').addEventListener('keyup', function () {
             let filtro = this.value.toLowerCase();
             let tarjetas = document.querySelectorAll('.producto-tarjeta');
@@ -119,54 +115,5 @@
                 }
             });
         });
-
-        // NUEVO: Lógica del Web Speech API
-        const btnVoiceSearch = document.getElementById('btnVoiceSearch');
-        const searchInput = document.getElementById('buscadorProductos');
-        const micIcon = document.getElementById('micIcon');
-
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-
-            recognition.lang = 'es-ES'; // Idioma español
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
-
-            btnVoiceSearch.addEventListener('click', function() {
-                recognition.start();
-                // Cambiar el estilo del botón para indicar que está escuchando
-                btnVoiceSearch.classList.replace('btn-outline-warning', 'btn-danger');
-                micIcon.style.color = "white";
-                searchInput.placeholder = "Escuchando...";
-            });
-
-            recognition.onresult = function(event) {
-                const speechResult = event.results[0][0].transcript;
-                // Colocar el texto en tu input original
-                searchInput.value = speechResult;
-                
-                // Disparar el evento 'keyup' para que tu filtro original actúe de inmediato
-                searchInput.dispatchEvent(new Event('keyup'));
-            };
-
-            recognition.onspeechend = function() {
-                recognition.stop();
-            };
-
-            recognition.onend = function() {
-                // Restaurar el botón a su estado original
-                btnVoiceSearch.classList.replace('btn-danger', 'btn-outline-warning');
-                micIcon.style.color = "#333";
-                searchInput.placeholder = "Ej: Fideo Corbata, Espagueti...";
-            };
-
-            recognition.onerror = function(event) {
-                console.error("Error de voz: " + event.error);
-            };
-        } else {
-            // Ocultar si el navegador no lo soporta
-            btnVoiceSearch.style.display = 'none'; 
-        }
     </script>
 }
