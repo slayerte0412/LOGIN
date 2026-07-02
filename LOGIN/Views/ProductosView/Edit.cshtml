@@ -1,42 +1,94 @@
-﻿@model LOGIN.Models.Producto
-@{ ViewData["Title"] = "Editar Producto"; }
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card card-custom bg-white p-4">
-            <div class="text-center mb-4">
-                <i class="bi bi-pencil-square fs-1 text-warning"></i>
-                <h2 class="h3 fw-bold mt-2">Modificar Producto</h2>
+@model LOGIN.Models.Producto
+
+@{
+    ViewData["Title"] = "Editar Producto";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card card-lazaroni shadow-lg border-0 rounded-4" style="background-color: #1e1e1e;">
+                <div class="card-header border-bottom border-secondary text-center py-4" style="background-color: #1a1a1a;">
+                    <h2 class="fw-bold text-warning mb-0"><i class="bi bi-pencil-square me-2"></i>Editar Producto</h2>
+                    <p class="text-muted mb-0">Modifica los detalles de @Model.Nombre</p>
+                </div>
+                <div class="card-body p-4 text-light">
+                    
+                    <form asp-action="Edit" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="ImagenLocal" />
+                        <input type="hidden" asp-for="ImagenBase64" />
+                        <input type="hidden" asp-for="FechaRegistro" />
+
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label asp-for="Nombre" class="form-label text-warning fw-bold">Nombre del Producto</label>
+                                <input asp-for="Nombre" class="form-control bg-dark text-light border-secondary" />
+                                <span asp-validation-for="Nombre" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label asp-for="Descripcion" class="form-label text-warning fw-bold">Descripción</label>
+                                <textarea asp-for="Descripcion" class="form-control bg-dark text-light border-secondary" rows="3"></textarea>
+                                <span asp-validation-for="Descripcion" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Precio" class="form-label text-warning fw-bold">Precio (Bs.)</label>
+                                <input asp-for="Precio" type="number" step="0.01" class="form-control bg-dark text-light border-secondary" />
+                                <span asp-validation-for="Precio" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Cantidad" class="form-label text-warning fw-bold">Stock Actual</label>
+                                <input asp-for="Cantidad" type="number" class="form-control bg-dark text-light border-secondary" />
+                                <span asp-validation-for="Cantidad" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-12 mt-4 p-3 rounded" style="background-color: #242424;">
+                                <label class="form-label text-warning fw-bold"><i class="bi bi-image me-2"></i>Actualizar Imagen (Opcional)</label>
+                                
+                                <div class="d-flex align-items-center mb-3">
+                                    @if (!string.IsNullOrEmpty(Model.ImagenBase64))
+                                    {
+                                        <img src="@Model.ImagenBase64" class="rounded me-3 shadow" style="width: 60px; height: 60px; object-fit: cover;" alt="Actual" />
+                                    }
+                                    else if (!string.IsNullOrEmpty(Model.ImagenLocal))
+                                    {
+                                        <img src="~/images/imagesproductos/@Model.ImagenLocal" class="rounded me-3 shadow" style="width: 60px; height: 60px; object-fit: cover;" alt="Actual" onerror="this.src='/images/icon-192x192.png'" />
+                                    }
+                                    <span class="text-muted small">Sube un archivo nuevo solo si deseas reemplazar la imagen actual.</span>
+                                </div>
+
+                                <input type="file" name="imagenUpload" class="form-control bg-dark text-light border-secondary" accept="image/*" />
+                            </div>
+
+                            <div class="col-md-12 mt-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" asp-for="Activo">
+                                    <label class="form-check-label text-light" asp-for="Activo">Producto Activo (Visible en la tienda)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-5">
+                            <a asp-action="Index" class="btn btn-outline-light px-4">
+                                <i class="bi bi-arrow-left me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-lazaroni px-5">
+                                <i class="bi bi-save me-2"></i>Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
             </div>
-            <form asp-action="Edit">
-                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-                <input type="hidden" asp-for="Id" />
-                <input type="hidden" asp-for="FechaRegistro" />
-                <div class="mb-3">
-                    <label asp-for="Nombre" class="form-label fw-semibold">Nombre *</label>
-                    <input asp-for="Nombre" class="form-control" />
-                    <span asp-validation-for="Nombre" class="text-danger"></span>
-                </div>
-                <div class="mb-3">
-                    <label asp-for="Descripcion" class="form-label fw-semibold">Descripción</label>
-                    <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="Cantidad" class="form-label fw-semibold">Cantidad *</label>
-                        <input asp-for="Cantidad" class="form-control" type="number" min="0" />
-                        <span asp-validation-for="Cantidad" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="Precio" class="form-label fw-semibold">Precio *</label>
-                        <input asp-for="Precio" class="form-control" type="number" step="0.01" min="0.01" />
-                        <span asp-validation-for="Precio" class="text-danger"></span>
-                    </div>
-                </div>
-                <div class="d-flex gap-2 justify-content-end mt-3">
-                    <a asp-action="Index" class="btn btn-light rounded-pill px-4">Volver</a>
-                    <button type="submit" class="btn btn-warning rounded-pill px-4">Actualizar</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
