@@ -4,19 +4,19 @@
     ViewData["Title"] = "Tienda";
 }
 
-<div class="container mt-4 bg-white p-4 rounded-4 shadow-sm">
+<div class="container mt-4 p-4 rounded-4 shadow-sm" style="background-color: #1a1a1a;">
     
     <div class="row mb-4 align-items-center">
         <div class="col-md-5">
-            <h1 class="display-6 fw-bold text-dark"><i class="bi bi-shop text-warning me-2"></i>Nuestros Productos</h1>
+            <h1 class="display-6 fw-bold text-light"><i class="bi bi-shop text-warning me-2"></i>Nuestros Productos</h1>
             <p class="text-muted">Descubre la calidad de Fideos Lazaroni</p>
         </div>
         <div class="col-md-4 mb-3 mb-md-0">
             <div class="input-group shadow-sm">
-                <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                <span class="input-group-text"><i class="bi bi-search text-muted"></i></span>
                 <input type="text" id="buscadorProductos" class="form-control border-start-0 border-end-0" placeholder="Ej: Fideo Corbata, Espagueti...">
                 <button class="btn btn-outline-warning" type="button" id="btnVoiceSearch" title="Búsqueda por voz">
-                    <i class="bi bi-mic-fill" id="micIcon" style="color: #333;"></i>
+                    <i class="bi bi-mic-fill" id="micIcon"></i>
                 </button>
             </div>
         </div>
@@ -35,8 +35,8 @@
     <div class="row g-4" id="contenedorProductos">
         @foreach (var producto in Model.Where(p => p.Activo))
         {
-            <div class="col-md-6 col-lg-4 col-xl-3 producto-tarjeta">
-                <div class="card card-lazaroni h-100 border">
+            <div class="col-6 col-md-6 col-lg-4 col-xl-3 producto-tarjeta">
+                <div class="card card-lazaroni h-100">
                     
                     @if (!string.IsNullOrEmpty(producto.ImagenBase64))
                     {
@@ -48,38 +48,80 @@
                     }
                     else
                     {
-                        <div class="card-img-top text-center bg-light" style="height: 200px; display: flex; align-items: center; justify-content: center;">
-                            <i class="bi bi-box-seam" style="font-size: 4rem; color: #ccc;"></i>
+                        <div class="card-img-top text-center bg-dark" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-box-seam" style="font-size: 4rem; color: #555;"></i>
                         </div>
                     }
 
-                    <div class="card-body d-flex flex-column justify-content-between">
+                    <div class="card-body d-flex flex-column justify-content-between p-3">
                         <div>
-                            <h5 class="card-title fw-bold text-dark nombre-producto">@producto.Nombre</h5>
-                            <p class="text-muted small">@(producto.Descripcion?.Length > 60 ? producto.Descripcion.Substring(0, 60) + "..." : producto.Descripcion ?? "Sin descripción")</p>
+                            <h5 class="card-title fw-bold text-light nombre-producto" style="font-size: 1.1rem;">@producto.Nombre</h5>
+                            <p class="text-muted small mb-2">@(producto.Descripcion?.Length > 40 ? producto.Descripcion.Substring(0, 40) + "..." : producto.Descripcion ?? "Sin descripción")</p>
                         </div>
                         
-                        <div class="mt-3">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="fs-5 fw-bold text-success">Bs. @producto.Precio.ToString("0.00")</span>
-                                <span class="badge badge-lazaroni">Stock: @producto.Cantidad</span>
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fs-5 fw-bold text-warning">Bs. @producto.Precio.ToString("0.00")</span>
+                                <span class="badge badge-lazaroni" style="font-size: 0.75rem;">Stock: @producto.Cantidad</span>
                             </div>
 
-                            @if (string.IsNullOrEmpty(Context.Session.GetString("UsuarioId")))
-                            {
-                                <a asp-controller="Account" asp-action="Login" class="btn btn-sm btn-dark-lazaroni w-100">
-                                    <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar sesión
-                                </a>
-                            }
-                            else if (producto.Cantidad > 0)
-                            {
-                                <button class="btn btn-sm btn-lazaroni w-100 add-to-cart" data-id="@producto.Id">
-                                    <i class="bi bi-cart-plus me-1"></i> Agregar al Carrito
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalProducto-@producto.Id" title="Vista Previa">
+                                    <i class="bi bi-eye"></i>
                                 </button>
-                            }
-                            else
+
+                                @if (string.IsNullOrEmpty(Context.Session.GetString("UsuarioId")))
+                                {
+                                    <a asp-controller="Account" asp-action="Login" class="btn btn-sm btn-dark-lazaroni flex-grow-1">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i> Entrar
+                                    </a>
+                                }
+                                else if (producto.Cantidad > 0)
+                                {
+                                    <button class="btn btn-sm btn-lazaroni flex-grow-1 add-to-cart" data-id="@producto.Id">
+                                        <i class="bi bi-cart-plus me-1"></i> Agregar
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-secondary flex-grow-1" disabled>Agotado</button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="modalProducto-@producto.Id" tabindex="-1" aria-labelledby="modalLabel-@producto.Id" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content bg-dark-lazaroni">
+                        <div class="modal-header border-0">
+                            <h5 class="modal-title fw-bold text-warning" id="modalLabel-@producto.Id">@producto.Nombre</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            @if (!string.IsNullOrEmpty(producto.ImagenBase64))
                             {
-                                <button class="btn btn-sm btn-secondary w-100" disabled>Agotado</button>
+                                <img src="@producto.ImagenBase64" class="img-fluid rounded-3 mb-3 shadow" alt="@producto.Nombre" style="max-height: 250px; object-fit: contain;">
+                            }
+                            else if (!string.IsNullOrEmpty(producto.ImagenLocal))
+                            {
+                                <img src="~/images/imagesproductos/@producto.ImagenLocal" class="img-fluid rounded-3 mb-3 shadow" alt="@producto.Nombre" style="max-height: 250px; object-fit: contain;" onerror="this.src='/images/icon-512x512.png'">
+                            }
+                            <h3 class="fw-bold text-warning mb-3">Bs. @producto.Precio.ToString("0.00")</h3>
+                            <p class="text-light text-start" style="font-size: 0.95rem;">@(producto.Descripcion ?? "Este producto no tiene descripción detallada disponible en este momento.")</p>
+                            <div class="text-start mt-3">
+                                <span class="badge badge-lazaroni fs-6">Stock Disponible: @producto.Cantidad unidades</span>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cerrar</button>
+                            
+                            @if (!string.IsNullOrEmpty(Context.Session.GetString("UsuarioId")) && producto.Cantidad > 0)
+                            {
+                                <button class="btn btn-lazaroni px-4 add-to-cart" data-id="@producto.Id" data-bs-dismiss="modal">
+                                    <i class="bi bi-cart-plus me-2"></i> Añadir al Carrito
+                                </button>
                             }
                         </div>
                     </div>
@@ -88,6 +130,83 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Agregar al carrito
+        $('.add-to-cart').click(function() {
+            var productoId = $(this).data('id');
+            $.post('/Tienda/AgregarAlCarrito', { productoId: productoId, cantidad: 1 })
+            .done(function(res) {
+                if (res.success) {
+                    alert(res.message);
+                    location.reload();
+                } else {
+                    alert(res.message);
+                }
+            });
+        });
+
+        // Buscador por teclado
+        document.getElementById('buscadorProductos').addEventListener('keyup', function () {
+            let filtro = this.value.toLowerCase();
+            let tarjetas = document.querySelectorAll('.producto-tarjeta');
+
+            tarjetas.forEach(function (tarjeta) {
+                let nombreProducto = tarjeta.querySelector('.nombre-producto').innerText.toLowerCase();
+                if (nombreProducto.includes(filtro)) {
+                    tarjeta.style.display = '';
+                } else {
+                    tarjeta.style.display = 'none';
+                }
+            });
+        });
+
+        // Web Speech API (Búsqueda por Voz)
+        const btnVoiceSearch = document.getElementById('btnVoiceSearch');
+        const searchInput = document.getElementById('buscadorProductos');
+        const micIcon = document.getElementById('micIcon');
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+
+            recognition.lang = 'es-ES';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            btnVoiceSearch.addEventListener('click', function() {
+                recognition.start();
+                btnVoiceSearch.classList.replace('btn-outline-warning', 'btn-warning');
+                micIcon.classList.replace('text-muted', 'text-dark');
+                searchInput.placeholder = "Escuchando...";
+            });
+
+            recognition.onresult = function(event) {
+                const speechResult = event.results[0][0].transcript;
+                searchInput.value = speechResult;
+                searchInput.dispatchEvent(new Event('keyup'));
+            };
+
+            recognition.onspeechend = function() {
+                recognition.stop();
+            };
+
+            recognition.onend = function() {
+                btnVoiceSearch.classList.replace('btn-warning', 'btn-outline-warning');
+                micIcon.classList.replace('text-dark', 'text-muted');
+                searchInput.placeholder = "Ej: Fideo Corbata, Espagueti...";
+            };
+
+            recognition.onerror = function(event) {
+                console.error("Error de voz: " + event.error);
+            };
+        } else {
+            btnVoiceSearch.style.display = 'none'; 
+        }
+    </script>
+}
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
