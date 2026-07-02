@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LOGIN.Models;
 using LOGIN.Data;
@@ -14,12 +14,23 @@ namespace LOGIN.Controllers
             _context = context;
         }
 
+        // Aseguramos la hora de Bolivia para los servidores en la nube
+        private DateTime ObtenerHoraBolivia()
+        {
+            return DateTime.UtcNow.AddHours(-4);
+        }
+
         [HttpGet]
         public IActionResult Login()
         {
             if (!string.IsNullOrEmpty(HttpContext.Session.GetString("UsuarioId")))
             {
-                return RedirectToAction("Index", "Home");
+                // Redirigir según el rol si ya está logueado
+                if (HttpContext.Session.GetString("UsuarioRol") == "Admin")
+                {
+                    return RedirectToAction("Dashboard", "Admin");
+                }
+                return RedirectToAction("Index", "Tienda");
             }
             return View();
         }
@@ -38,7 +49,13 @@ namespace LOGIN.Controllers
                     HttpContext.Session.SetString("UsuarioNombre", usuario.Nombre ?? "");
                     HttpContext.Session.SetString("UsuarioEmail", usuario.Email ?? "");
                     HttpContext.Session.SetString("UsuarioRol", usuario.Rol ?? "Cliente");
-                    return RedirectToAction("Index", "Home");
+                    
+                    // Redirección inteligente post-login
+                    if (usuario.Rol == "Admin")
+                    {
+                        return RedirectToAction("Dashboard", "Admin");
+                    }
+                    return RedirectToAction("Index", "Tienda");
                 }
                 else
                 {
@@ -75,7 +92,9 @@ namespace LOGIN.Controllers
                     usuario.Rol = "Cliente";
                 }
 
-                usuario.FechaRegistro = DateTime.Now;
+                // Aplicamos la hora exacta de Bolivia
+                usuario.FechaRegistro = ObtenerHoraBolivia();
+                
                 _context.Usuarios.Add(usuario);
                 await _context.SaveChangesAsync();
 
@@ -88,6 +107,10 @@ namespace LOGIN.Controllers
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
+            return RedirectToAction("Login");
+        }
+    }
+}
             return RedirectToAction("Login");
         }
     }
