@@ -4,90 +4,121 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Fideos Lazaroni</title>
-
-    <link rel="manifest" href="~/manifest.json" />
-    <meta name="theme-color" content="#1a1a1a" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        * {
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background-color: #f8f9fa;
-            color: #333;
-            min-height: 100vh;
-            padding-bottom: 2rem;
-        }
-
-        .navbar-lazaroni {
-            background-color: #1a1a1a !important;
-            border-bottom: 4px solid #F39C12;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        }
-
-        .card-custom {
-            border: none;
-            border-radius: 1rem;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-            overflow: hidden;
-            background: white;
-        }
-
-        .card-custom:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(243, 156, 18, 0.2);
-            border: 1px solid rgba(243, 156, 18, 0.5);
-        }
-
-        .btn-custom-primary {
-            background: linear-gradient(135deg, #FFD700 0%, #F39C12 100%);
-            color: #1a1a1a !important;
-            font-weight: 600;
-            border: none;
-            border-radius: 2rem;
-            padding: 0.5rem 1.5rem;
-            transition: all 0.3s;
-        }
-
-        .btn-custom-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
-            background: linear-gradient(135deg, #F39C12 0%, #E67E22 100%);
-            color: white !important;
-        }
-
-        .table-modern {
-            border-radius: 1rem;
-            overflow: hidden;
-            background: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-
-        .badge-stock {
-            background-color: #1a1a1a;
-            color: #FFD700;
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
-            font-weight: 500;
-        }
-
-        footer {
-            background-color: #1a1a1a;
-            color: rgba(255,255,255,0.7);
-            text-align: center;
-            margin-top: 3rem;
-            padding: 1.5rem 0;
-        }
-    </style>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/LOGIN.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="manifest" href="~/manifest.json">
+    <meta name="theme-color" content="#121212">
 </head>
+<body class="d-flex flex-column min-vh-100" style="background-color: #121212; color: #e0e0e0;">
+    
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark border-bottom box-shadow mb-3" style="background-color: #1a1a1a; border-color: #333 !important;">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold text-warning" asp-area="" asp-controller="Tienda" asp-action="Index">
+                    <i class="bi bi-shop-window me-2"></i>Lazaroni
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    
+                    <ul class="navbar-nav flex-grow-1">
+                        @{
+                            var rolUsuario = Context.Session.GetString("UsuarioRol");
+                            var isLogueado = !string.IsNullOrEmpty(Context.Session.GetString("UsuarioId"));
+                        }
+
+                        @if (isLogueado)
+                        {
+                            @if (rolUsuario == "Admin")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-light" asp-area="" asp-controller="Admin" asp-action="Dashboard"><i class="bi bi-speedometer2 text-warning me-1"></i> Dashboard</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-light" asp-area="" asp-controller="ProductosView" asp-action="Index"><i class="bi bi-boxes text-warning me-1"></i> Gestión de Fideos</a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-light" asp-area="" asp-controller="Tienda" asp-action="Index"><i class="bi bi-shop text-warning me-1"></i> Tienda</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-light" asp-area="" asp-controller="Tienda" asp-action="MisCompras"><i class="bi bi-bag-check text-warning me-1"></i> Mis Compras</a>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-light" asp-area="" asp-controller="Tienda" asp-action="Index"><i class="bi bi-shop text-warning me-1"></i> Explorar Tienda</a>
+                            </li>
+                        }
+                    </ul>
+
+                    <ul class="navbar-nav">
+                        @if (isLogueado)
+                        {
+                            <li class="nav-item me-3 d-flex align-items-center">
+                                <span class="nav-link text-warning fw-bold"><i class="bi bi-person-circle me-1"></i> Hola, @Context.Session.GetString("UsuarioNombre")</span>
+                            </li>
+                            <li class="nav-item d-flex align-items-center">
+                                <a class="btn btn-outline-danger btn-sm" asp-area="" asp-controller="Account" asp-action="Logout">Cerrar Sesión</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item me-2 mt-1 mt-sm-0">
+                                <a class="btn btn-outline-warning" asp-area="" asp-controller="Account" asp-action="Login">Ingresar</a>
+                            </li>
+                            <li class="nav-item mt-1 mt-sm-0">
+                                <a class="btn btn-warning text-dark fw-bold" asp-area="" asp-controller="Account" asp-action="Register">Registrarse</a>
+                            </li>
+                        }
+                    </ul>
+
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container flex-grow-1">
+        <main role="main" class="pb-3">
+            @if (TempData["Mensaje"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show bg-dark-lazaroni text-warning border-warning" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i> @TempData["Mensaje"]
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show bg-dark text-danger border-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted mt-auto" style="background-color: #1a1a1a; border-color: #333 !important;">
+        <div class="container text-center py-3">
+            &copy; @DateTime.Now.Year - Fideos Lazaroni - <a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-warning text-decoration-none">Privacidad</a>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
 <body>
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark navbar-lazaroni">
