@@ -111,6 +111,29 @@ namespace LOGIN.Controllers
         }
     }
 }
+                {
+                    usuario.Rol = "Cliente";
+                }
+
+                // Aplicamos la hora exacta de Bolivia
+                usuario.FechaRegistro = ObtenerHoraBolivia();
+                
+                _context.Usuarios.Add(usuario);
+                await _context.SaveChangesAsync();
+
+                TempData["Mensaje"] = "Registro exitoso. ¡Inicia sesión!";
+                return RedirectToAction("Login");
+            }
+            return View(usuario);
+        }
+
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login");
+        }
+    }
+}
             return RedirectToAction("Login");
         }
     }
