@@ -1,0 +1,210 @@
+@model IEnumerable<LOGIN.Models.Pedido>
+
+@{
+    ViewData["Title"] = "Dashboard Administrativo";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold text-warning"><i class="bi bi-speedometer2 me-2"></i>Centro de Control Lazaroni</h2>
+            <p class="text-muted">Resumen general de ventas e inventario en tiempo real.</p>
+        </div>
+    </div>
+
+    <!-- TARJETAS DE RESUMEN (KPIs) -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card card-lazaroni border-0 shadow text-center p-4 h-100">
+                <i class="bi bi-cash-stack text-success fs-1 mb-2"></i>
+                <h5 class="text-light">Ingresos Totales</h5>
+                <h3 class="fw-bold text-warning">Bs. @ViewBag.TotalIngresos.ToString("0.00")</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-lazaroni border-0 shadow text-center p-4 h-100">
+                <i class="bi bi-box-seam text-info fs-1 mb-2"></i>
+                <h5 class="text-light">Pedidos Registrados</h5>
+                <h3 class="fw-bold text-warning">@ViewBag.TotalPedidos</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-lazaroni border-0 shadow text-center p-4 h-100">
+                <i class="bi bi-people text-primary fs-1 mb-2"></i>
+                <h5 class="text-light">Clientes Activos</h5>
+                <h3 class="fw-bold text-warning">@ViewBag.TotalClientes</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN DE GRÁFICOS (CHART.JS) -->
+    <div class="row g-4 mb-5">
+        <!-- Gráfico de Barras: Ventas Mensuales -->
+        <div class="col-lg-8">
+            <div class="card card-lazaroni border-0 shadow p-4 h-100">
+                <h5 class="text-warning fw-bold mb-4"><i class="bi bi-bar-chart-line me-2"></i>Ingresos de los últimos 6 meses</h5>
+                <div style="height: 300px;">
+                    <canvas id="ventasChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Gráfico de Dona: Top Productos -->
+        <div class="col-lg-4">
+            <div class="card card-lazaroni border-0 shadow p-4 h-100">
+                <h5 class="text-warning fw-bold mb-4"><i class="bi bi-pie-chart me-2"></i>Top 5 Fideos más vendidos</h5>
+                <div style="height: 300px; display: flex; justify-content: center;">
+                    <canvas id="productosChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HISTORIAL GENERAL DE VENTAS -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card card-lazaroni border-0 shadow p-4">
+                <h4 class="text-warning fw-bold mb-4"><i class="bi bi-clock-history me-2"></i>Historial General de Pedidos</h4>
+                
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle" style="background-color: transparent;">
+                        <thead>
+                            <tr class="text-warning">
+                                <th>Referencia</th>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Detalle del Pedido</th>
+                                <th>Total (Bs.)</th>
+                                <th>Estado / Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                @foreach (var pedido in Model)
+                                {
+                                    <tr>
+                                        <td class="fw-bold">@pedido.NumeroReferencia</td>
+                                        <td>@pedido.FechaPedido.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>
+                                            @pedido.Usuario?.Nombre <br />
+                                            <small class="text-muted">@pedido.Usuario?.Email</small>
+                                        </td>
+                                        <td>
+                                            <ul class="list-unstyled mb-0 small">
+                                                @foreach (var detalle in pedido.Detalles!)
+                                                {
+                                                    <li>- @detalle.Cantidad x @detalle.Producto?.Nombre</li>
+                                                }
+                                            </ul>
+                                        </td>
+                                        <td class="text-success fw-bold">@pedido.Total.ToString("0.00")</td>
+                                        <td>
+                                            <!-- Formulario para cambiar el estado del pedido en caliente -->
+                                            <form asp-action="ActualizarEstado" method="post" class="d-flex">
+                                                <input type="hidden" name="id" value="@pedido.Id" />
+                                                <select name="nuevoEstado" class="form-select form-select-sm bg-dark text-light border-secondary me-2" onchange="this.form.submit()">
+                                                    @foreach (var estado in Enum.GetValues(typeof(LOGIN.Models.EstadoPedido)))
+                                                    {
+                                                        if (pedido.Estado.ToString() == estado.ToString())
+                                                        {
+                                                            <option value="@estado" selected>@estado</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@estado">@estado</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">No hay pedidos registrados en el sistema.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Importar Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Cargar los datos serializados que enviamos desde el AdminController
+        var labelsMeses = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.LabelsMeses));
+        var dataVentas = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.DataVentas));
+        
+        var labelsProductos = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.LabelsProductos));
+        var dataProductos = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.DataProductos));
+
+        // GRÁFICO 1: Ventas Mensuales (Bar Chart)
+        var ctxVentas = document.getElementById('ventasChart').getContext('2d');
+        new Chart(ctxVentas, {
+            type: 'bar',
+            data: {
+                labels: labelsMeses,
+                datasets: [{
+                    label: 'Ingresos (Bs.)',
+                    data: dataVentas,
+                    backgroundColor: 'rgba(255, 193, 7, 0.8)', // Amarillo Lazaroni
+                    borderColor: '#ffc107',
+                    borderWidth: 1,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#333' },
+                        ticks: { color: '#aaa' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#aaa' }
+                    }
+                }
+            }
+        });
+
+        // GRÁFICO 2: Top Productos (Doughnut Chart)
+        var ctxProductos = document.getElementById('productosChart').getContext('2d');
+        new Chart(ctxProductos, {
+            type: 'doughnut',
+            data: {
+                labels: labelsProductos,
+                datasets: [{
+                    data: dataProductos,
+                    backgroundColor: [
+                        '#ffc107', '#ff9800', '#e0a800', '#c69500', '#b38600'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#aaa' }
+                    }
+                }
+            }
+        });
+    </script>
+}
